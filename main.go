@@ -15,10 +15,9 @@ func main() {
 	config.Setup()
 
 	db := database.Setup()
+	database.Migrate()
 
-	repository.New(db)
-
-	//database.Init()
+	repository.Setup(repository.AuthRepository{}, db)
 
 	if !config.IsDebug {
 		gin.SetMode(gin.ReleaseMode)

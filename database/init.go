@@ -34,6 +34,6 @@ func Setup() *gorm.DB {
 	return db
 }
 
-func Init() {
+func Migrate() {
 	db.AutoMigrate(&models.User{})
 }

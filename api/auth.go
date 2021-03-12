@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	ErrUserAlreadyExist = errors.New("This username is already taken.")
+	ErrUserAlreadyExist = errors.New("username is already taken")
 )
 
 func register(c *gin.Context) {
@@ -19,19 +19,19 @@ func register(c *gin.Context) {
 		return
 	}
 
-	repo := repository.Get()
+	repo := repository.GetAuthRepository()
 
 	userModel := vm.ToModel()
 
-	isExist, errUserExist := repo.IsUserExist(&userModel)
+	user, err := repo.UserExist(&userModel)
 
-	if isExist {
+	if err == nil && user.ID > 0 {
 		Error(c, 400, ErrUserAlreadyExist)
 		return
 	}
 
-	if errUserExist != nil {
-		Error(c, 400, errUserExist)
+	if err != nil {
+		Error(c, 400, err)
 		return
 	}
 
