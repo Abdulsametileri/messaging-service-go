@@ -6,24 +6,24 @@ import (
 	"strings"
 )
 
-type RegisterVm struct {
-	UserName string `json:"user_name"`
-	Password string `json:"password"`
+type AuthVm struct {
+	UserName string `json:"user_name" binding:"required,min=3"`
+	Password string `json:"password" binding:"required"`
 }
 
-func (vm *RegisterVm) formatUserName() {
+func (vm *AuthVm) formatUserName() {
 	vm.UserName = strings.ToLower(strings.TrimSpace(vm.UserName))
 }
 
-func (vm *RegisterVm) formatPassword() {
+func (vm *AuthVm) formatPassword() {
 	vm.Password = strings.ToLower(strings.TrimSpace(vm.Password))
 }
 
-func (vm *RegisterVm) hashPassword() {
+func (vm *AuthVm) hashPassword() {
 	vm.Password = helpers.Sha256String(vm.Password)
 }
 
-func (vm *RegisterVm) ToModel() models.User {
+func (vm *AuthVm) ToModel() models.User {
 	vm.formatUserName()
 	vm.formatPassword()
 	vm.hashPassword()

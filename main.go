@@ -6,7 +6,6 @@ import (
 	"github.com/Abdulsametileri/messaging-service/config"
 	"github.com/Abdulsametileri/messaging-service/database"
 	"github.com/Abdulsametileri/messaging-service/repository"
-	"github.com/gin-gonic/gin"
 	"log"
 )
 
@@ -17,15 +16,12 @@ func main() {
 	db := database.Setup()
 	database.Migrate()
 
+	repository.Setup(repository.LogRepository{}, db)
 	repository.Setup(repository.AuthRepository{}, db)
 
-	if !config.IsDebug {
-		gin.SetMode(gin.ReleaseMode)
-	}
-	r := gin.Default()
+	router := api.SetupRouter()
 
-	api.Setup(r)
-	err := r.Run(":8080")
+	err := router.Run(":8080")
 	if err != nil {
 		log.Fatal(err.Error())
 	}

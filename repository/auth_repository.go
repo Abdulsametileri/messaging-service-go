@@ -25,7 +25,21 @@ func (p *AuthRepository) CreateUser(user *models.User) error {
 	return err
 }
 
-func (p *AuthRepository) UserExist(user *models.User) (*models.User, error) {
+func (p *AuthRepository) ExistUser(userName string) (bool, error) {
+	var user models.User
+	err := p.db.Model(&models.User{}).First(&user, "user_name = ?", userName).Error
+
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
+func (p *AuthRepository) GetUser(user *models.User) (*models.User, error) {
 	err := p.db.Model(&models.User{}).
 		First(&user, "user_name = ? AND password = ?", user.UserName, user.Password).
 		Error
@@ -35,7 +49,7 @@ func (p *AuthRepository) UserExist(user *models.User) (*models.User, error) {
 	}
 
 	if err != nil {
-		return nil, err
+		return &models.User{}, err
 	}
 
 	return user, nil
