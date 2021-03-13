@@ -17,53 +17,38 @@ func mutateUser(c *gin.Context) {
 
 	user, err := userRepo.GetUser(userClaims.Id)
 	if err != nil {
-		c.Set(
-			c.FullPath(),
-			fmt.Sprintf("userClaimsId=%d does not found in the database", userClaims.Id),
-		)
-		Error(c, http.StatusBadRequest, err)
+		Error(c, http.StatusBadRequest, err, fmt.Sprintf("userClaimsId=%d does not found in the database", userClaims.Id))
 		return
 	}
 
 	mutateThisUserId, err := strconv.Atoi(c.Query("mutateUserId"))
 	if err != nil {
-		c.Set(
-			c.FullPath(),
-			fmt.Sprintf("User id=%d tried to pass api via invalid param %s",
-				userClaims.Id, c.Query("mutateUserId"),
-			),
+		logMsg := fmt.Sprintf("User id=%d tried to pass api via invalid param %s",
+			userClaims.Id, c.Query("mutateUserId"),
 		)
-		Error(c, http.StatusBadRequest, errors.New("invalid param"))
+		Error(c, http.StatusBadRequest, errors.New("invalid param"), logMsg)
 		return
 	}
 
 	if mutateThisUserId == userClaims.Id {
-		c.Set(
-			c.FullPath(),
-			fmt.Sprintf("User id=%d tried to mutate yourself", userClaims.Id),
-		)
-		Error(c, http.StatusBadRequest, errors.New("You cannot mutate yourself, sorry."))
+		Error(c, http.StatusBadRequest, errors.New("You cannot mutate yourself, sorry."),
+			fmt.Sprintf("User id=%d tried to mutate yourself", userClaims.Id))
 		return
 	}
 
 	mutatedUser, err := userRepo.GetUser(mutateThisUserId)
 	if err != nil {
-		c.Set(
-			c.FullPath(),
-			fmt.Sprintf("User Id=%d and UserName=%s tried to mutate not existed user. mutateUserId=%d",
-				user.ID, user.UserName, mutateThisUserId),
-		)
-		Error(c, http.StatusBadRequest, errors.New("Want to mutated user does not exist."))
+		logMsg := fmt.Sprintf("User Id=%d and UserName=%s tried to mutate not existed user. mutateUserId=%d",
+			user.ID, user.UserName, mutateThisUserId)
+		Error(c, http.StatusBadRequest, errors.New("Want to mutated user does not exist."), logMsg)
 		return
 	}
 
 	found := helpers.SearchNumberInPgArray(mutateThisUserId, user.MutedUserIDs)
 	if found {
-		c.Set(c.FullPath(),
-			fmt.Sprintf("User Id=%d and UserName=%s tried to mutate user before he/she mutated. mutateUserId=%d",
-				user.ID, user.UserName, mutateThisUserId),
-		)
-		Error(c, http.StatusBadRequest, errors.New("This user is already mutated."))
+		logMsg := fmt.Sprintf("User Id=%d and UserName=%s tried to mutate user before he/she mutated. mutateUserId=%d",
+			user.ID, user.UserName, mutateThisUserId)
+		Error(c, http.StatusBadRequest, errors.New("This user is already mutated."), logMsg)
 		return
 	}
 
@@ -72,13 +57,12 @@ func mutateUser(c *gin.Context) {
 
 	err = userRepo.SaveUser(&user)
 	if err != nil {
-		Error(c, http.StatusBadRequest, err)
+		Error(c, http.StatusBadRequest, err, "Error saving the user"+err.Error())
 		return
 	}
 
-	c.Set(c.FullPath(), fmt.Sprintf("%s has been mutated successfully from %s", mutatedUser.UserName, user.UserName))
-
-	Data(c, http.StatusOK, nil, "")
+	logMsg := fmt.Sprintf("%s has been mutated successfully from %s", mutatedUser.UserName, user.UserName)
+	Data(c, http.StatusOK, nil, "", logMsg)
 }
 
 func users(c *gin.Context) {
@@ -88,21 +72,13 @@ func users(c *gin.Context) {
 
 	user, err := userRepo.GetUser(userClaims.Id)
 	if err != nil {
-		c.Set(
-			c.FullPath(),
-			fmt.Sprintf("User Claims Id=%d does not found in the database.", userClaims.Id),
-		)
-		Error(c, http.StatusBadRequest, err)
+		Error(c, http.StatusBadRequest, err, fmt.Sprintf("User Claims Id=%d does not found in the database.", userClaims.Id))
 		return
 	}
 
 	users, err := userRepo.GetUserList(user.ID, user.MutedUserIDs)
 	if err != nil {
-		c.Set(
-			c.FullPath(),
-			fmt.Sprintf("Error occured within GetUserList for the user id = %d.", user.ID),
-		)
-		Error(c, http.StatusBadRequest, err)
+		Error(c, http.StatusBadRequest, err, fmt.Sprintf("Error occured within GetUserList for the user id = %d.", user.ID))
 		return
 	}
 
@@ -114,10 +90,5 @@ func users(c *gin.Context) {
 		}
 	}
 
-	c.Set(
-		c.FullPath(),
-		fmt.Sprintf("User Id=%d and UserName=%s listed users.", user.ID, user.UserName),
-	)
-
-	Data(c, 200, ret, "")
+	Data(c, 200, ret, "", fmt.Sprintf("User Id=%d and UserName=%s listed users.", user.ID, user.UserName))
 }

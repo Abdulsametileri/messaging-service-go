@@ -31,6 +31,11 @@ func (u *UserRepository) GetUser(userId int) (user models.User, err error) {
 	return
 }
 
+func (u *UserRepository) GetUserByUsername(userName string) (user models.User, err error) {
+	err = u.db.Model(&models.User{}).First(&user, "user_name = ?", userName).Error
+	return
+}
+
 func (u *UserRepository) GetUserList(userId int, mutatedUserIds pq.Int32Array) (users []models.User, err error) {
 	v, _ := mutatedUserIds.Value()
 	mutatedUserCondition := "NOT id = ANY('{values}')"

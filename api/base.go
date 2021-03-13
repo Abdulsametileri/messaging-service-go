@@ -17,20 +17,19 @@ type Props struct {
 	Message string      `json:"message"`
 }
 
-func Data(c *gin.Context, code int, data interface{}, message string) {
+func Data(c *gin.Context, code int, data interface{}, message string, requestDetail interface{}) {
 	props := &Props{
 		Code:    code,
 		Data:    data,
 		Message: message,
 	}
 
-	requestBody, _ := c.Get(c.FullPath())
-	requestBodyJson, _ := json.Marshal(&requestBody)
+	requestDetailJson, _ := json.Marshal(&requestDetail)
 	responseBodyJson, _ := json.Marshal(&props)
 
 	_ = logRepo.CreateLog(&models.Log{
 		ApiPath:  c.FullPath(),
-		Request:  requestBodyJson,
+		Request:  requestDetailJson,
 		Response: responseBodyJson,
 		Type:     models.LogInfo,
 	})
@@ -38,21 +37,19 @@ func Data(c *gin.Context, code int, data interface{}, message string) {
 	c.JSON(code, props)
 }
 
-func Error(c *gin.Context, code int, err error, logMessage interface{}) {
+func Error(c *gin.Context, code int, err error, requestDetail interface{}) {
 	props := &Props{
 		Code:    code,
 		Data:    nil,
 		Message: err.Error(),
 	}
 
+	requestDetailJson, _ := json.Marshal(&requestDetail)
 	responseJson, _ := json.Marshal(&props)
-
-	request, _ := c.Get(c.FullPath())
-	requestJson, _ := json.Marshal(&request)
 
 	_ = logRepo.CreateLog(&models.Log{
 		ApiPath:  c.FullPath(),
-		Request:  requestJson,
+		Request:  requestDetailJson,
 		Response: responseJson,
 		Type:     models.LogError,
 	})

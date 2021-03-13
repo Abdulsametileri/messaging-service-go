@@ -27,6 +27,9 @@ func SetupRouter() *gin.Engine {
 
 		v1.GET("mutateUser", jwtMiddleware, mutateUser)
 		v1.GET("users", jwtMiddleware, users)
+
+		v1.GET("messages", jwtMiddleware, messages)
+		v1.POST("sendMessage", jwtMiddleware, sendMessage)
 	}
 
 	return r

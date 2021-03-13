@@ -15,9 +15,11 @@ func customRecoveryMiddleware() gin.HandlerFunc {
 		defer func() {
 			if err := recover(); err != nil {
 				if v, ok := err.(error); ok {
-					Error(c, http.StatusInternalServerError, v)
+					Error(c, http.StatusInternalServerError,
+						v, "Error occured in the server "+v.Error())
 				} else {
-					Error(c, http.StatusInternalServerError, errors.New(err.(string)))
+					Error(c, http.StatusInternalServerError,
+						errors.New(err.(string)), "Error occured in the server "+err.(string))
 				}
 			}
 		}()
@@ -35,7 +37,7 @@ func jwtMiddleware(c *gin.Context) {
 		token = c.Query("token")
 	}
 	if token == "" || token == "Bearer" {
-		Error(c, http.StatusUnauthorized, errors.New("token is required"))
+		Error(c, http.StatusUnauthorized, errors.New("token is required"), "jwt middleware empty token error")
 		return
 	}
 
@@ -47,14 +49,20 @@ func jwtMiddleware(c *gin.Context) {
 
 	if err != nil {
 		if err == jwt.ErrSignatureInvalid {
-			Error(c, http.StatusUnauthorized, errors.New("Invalid token signature. Please try to log in again."))
+			Error(c, http.StatusUnauthorized,
+				errors.New("Invalid token signature. Please try to log in again."),
+				"jwt middleware invalid token signature error")
 			return
 		}
-		Error(c, http.StatusUnauthorized, errors.New("Session has ended. Please try to log in."))
+		Error(c, http.StatusUnauthorized,
+			errors.New("Session has ended. Please try to log in."),
+			"jwt middleware session ended error")
 		return
 	}
 	if !tkn.Valid {
-		Error(c, http.StatusUnauthorized, errors.New("Invalid Token"))
+		Error(c, http.StatusUnauthorized,
+			errors.New("Invalid Token"),
+			"jwt middleware invalid token error")
 		return
 	}
 	c.Set("claims", *claims)

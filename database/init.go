@@ -37,4 +37,5 @@ func Setup() *gorm.DB {
 func Migrate() {
 	db.AutoMigrate(&models.User{})
 	db.AutoMigrate(&models.Log{})
+	db.AutoMigrate(&models.Message{})
 }
