@@ -18,6 +18,8 @@ func main() {
 
 	repository.Setup(repository.LogRepository{}, db)
 	repository.Setup(repository.AuthRepository{}, db)
+	repository.Setup(repository.UserRepository{}, db)
+	repository.Setup(repository.MessageRepository{}, db)
 
 	router := api.SetupRouter()
 

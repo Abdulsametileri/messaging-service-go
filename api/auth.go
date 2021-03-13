@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"github.com/Abdulsametileri/messaging-service/config"
 	"github.com/Abdulsametileri/messaging-service/models"
 	"github.com/Abdulsametileri/messaging-service/repository"
@@ -21,40 +22,10 @@ func register(c *gin.Context) {
 	var vm viewmodels.AuthVm
 
 	if err := c.ShouldBindJSON(&vm); err != nil {
-		Error(c, 400, err)
-		return
-	}
-
-	repo := repository.GetAuthRepository()
-
-	userModel := vm.ToModel()
-
-	c.Set(c.FullPath(), userModel)
-
-	isExist, err := repo.ExistUser(userModel.UserName)
-
-	if err == nil && isExist {
-		Error(c, http.StatusBadRequest, ErrUserAlreadyExist)
-		return
-	}
-
-	if err != nil && !c.GetBool("test") {
-		Error(c, http.StatusBadRequest, err)
-		return
-	}
-
-	if errCreateUser := repo.CreateUser(&userModel); errCreateUser != nil {
-		Error(c, http.StatusBadRequest, errCreateUser)
-		return
-	}
-
-	Data(c, http.StatusOK, nil, "")
-}
-
-func login(c *gin.Context) {
-	var vm viewmodels.AuthVm
-
-	if err := c.ShouldBindJSON(&vm); err != nil {
+		c.Set(
+			c.FullPath(),
+			"Invalid body in register method"+err.Error(),
+		)
 		Error(c, 400, err)
 		return
 	}
@@ -64,6 +35,49 @@ func login(c *gin.Context) {
 	c.Set(c.FullPath(), userModel)
 
 	authRepo := repository.GetAuthRepository()
+
+	isExist, err := authRepo.ExistUser(userModel.UserName)
+
+	if err == nil && isExist {
+		c.Set(c.FullPath(), "User already exist error occured")
+		Error(c, http.StatusBadRequest, ErrUserAlreadyExist)
+		return
+	}
+
+	if err != nil && !c.GetBool("test") {
+		c.Set(c.FullPath(), "Error occured in the database "+err.Error())
+		Error(c, http.StatusBadRequest, err)
+		return
+	}
+
+	if errCreateUser := authRepo.CreateUser(&userModel); errCreateUser != nil {
+		c.Set(c.FullPath(), "Error creating user in the database "+errCreateUser.Error())
+		Error(c, http.StatusBadRequest, errCreateUser)
+		return
+	}
+
+	c.Set(c.FullPath(), fmt.Sprintf("A User has been registered successfully. ID=%d", userModel.ID))
+	Data(c, http.StatusOK, nil, "")
+}
+
+func login(c *gin.Context) {
+	var vm viewmodels.AuthVm
+
+	if err := c.ShouldBindJSON(&vm); err != nil {
+		c.Set(
+			c.FullPath(),
+			"Invalid body in register method"+err.Error(),
+		)
+		Error(c, 400, err)
+		return
+	}
+
+	userModel := vm.ToModel()
+
+	c.Set(c.FullPath(), userModel)
+
+	authRepo := repository.GetAuthRepository()
+
 	user, err := authRepo.GetUser(&userModel)
 
 	if err != nil && !c.GetBool("test") {

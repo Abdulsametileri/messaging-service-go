@@ -4,8 +4,9 @@ import (
 	"encoding/json"
 	"github.com/Abdulsametileri/messaging-service/models"
 	"github.com/Abdulsametileri/messaging-service/repository"
+	"github.com/Abdulsametileri/messaging-service/viewmodels"
 	"github.com/gin-gonic/gin"
-	"gorm.io/datatypes"
+	"net/http"
 )
 
 var logRepo = repository.GetLogRepository()
@@ -37,7 +38,7 @@ func Data(c *gin.Context, code int, data interface{}, message string) {
 	c.JSON(code, props)
 }
 
-func Error(c *gin.Context, code int, err error) {
+func Error(c *gin.Context, code int, err error, logMessage interface{}) {
 	props := &Props{
 		Code:    code,
 		Data:    nil,
@@ -46,14 +47,8 @@ func Error(c *gin.Context, code int, err error) {
 
 	responseJson, _ := json.Marshal(&props)
 
-	request, isExist := c.Get(c.FullPath())
-	var requestJson datatypes.JSON
-
-	if isExist {
-		requestJson, _ = json.Marshal(&request)
-	} else {
-		requestJson, _ = json.Marshal(err.Error())
-	}
+	request, _ := c.Get(c.FullPath())
+	requestJson, _ := json.Marshal(&request)
 
 	_ = logRepo.CreateLog(&models.Log{
 		ApiPath:  c.FullPath(),
@@ -62,5 +57,23 @@ func Error(c *gin.Context, code int, err error) {
 		Type:     models.LogError,
 	})
 
+	if code >= http.StatusInternalServerError {
+		props.Message = "Error occured in our own server. Sorry"
+	}
+
 	c.AbortWithStatusJSON(code, props)
+}
+
+func getUserClaims(c *gin.Context) (claims viewmodels.UserClaim) {
+	cl, ok := c.Get("claims")
+	if !ok {
+		return claims
+	}
+
+	userClaims, ok := cl.(viewmodels.UserClaim)
+	if !ok {
+		return claims
+	}
+
+	return userClaims
 }
