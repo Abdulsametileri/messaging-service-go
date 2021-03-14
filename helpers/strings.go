@@ -18,3 +18,7 @@ func Sha256String(text string) string {
 func LowerTrimString(text string) string {
 	return strings.ToLower(strings.TrimSpace(text))
 }
+
+func HashPassword(text string) string {
+	return Sha256String(text)
+}

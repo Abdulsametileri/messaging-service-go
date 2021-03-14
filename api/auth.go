@@ -37,7 +37,7 @@ func register(c *gin.Context) {
 		return
 	}
 
-	if err != nil && !c.GetBool("test") {
+	if err != nil {
 		Error(c, http.StatusBadRequest, err, "Error occured in the database "+err.Error())
 		return
 	}
@@ -64,7 +64,7 @@ func login(c *gin.Context) {
 
 	user, err := authRepo.GetUser(userModel.UserName, userModel.Password)
 
-	if err != nil && !c.GetBool("test") {
+	if err != nil {
 		Error(c, http.StatusBadRequest, err, "Error occured in the database. "+err.Error())
 		return
 	}
