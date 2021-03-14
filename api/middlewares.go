@@ -14,12 +14,13 @@ func customRecoveryMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
+				friendlyErrorToClient := errors.New("Error occured in our own server. Sorry")
 				if v, ok := err.(error); ok {
 					Error(c, http.StatusInternalServerError,
-						v, "Error occured in the server "+v.Error())
+						friendlyErrorToClient, v)
 				} else {
 					Error(c, http.StatusInternalServerError,
-						errors.New(err.(string)), "Error occured in the server "+err.(string))
+						friendlyErrorToClient, err.(string))
 				}
 			}
 		}()

@@ -6,7 +6,6 @@ import (
 	"github.com/Abdulsametileri/messaging-service/repository"
 	"github.com/Abdulsametileri/messaging-service/viewmodels"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 var logRepo = repository.GetLogRepository()
@@ -53,10 +52,6 @@ func Error(c *gin.Context, code int, err error, requestDetail interface{}) {
 		Response: responseJson,
 		Type:     models.LogError,
 	})
-
-	if code >= http.StatusInternalServerError {
-		props.Message = "Error occured in our own server. Sorry"
-	}
 
 	c.AbortWithStatusJSON(code, props)
 }
