@@ -8,3 +8,4 @@
 - [x] Tüm hatalar kayıt altına alınmalı ve kritik detaylar kullanıcılara iletilmemelidir.
 - [ ] Dockerize
 - [ ] Unit Test Coverage
+

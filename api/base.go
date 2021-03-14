@@ -16,14 +16,14 @@ type Props struct {
 	Message string      `json:"message"`
 }
 
-func Data(c *gin.Context, code int, data interface{}, message string, requestDetail interface{}) {
+func Data(c *gin.Context, code int, data interface{}, message string, requestDetailForLogPurpose interface{}) {
 	props := &Props{
 		Code:    code,
 		Data:    data,
 		Message: message,
 	}
 
-	requestDetailJson, _ := json.Marshal(&requestDetail)
+	requestDetailJson, _ := json.Marshal(&requestDetailForLogPurpose)
 	responseBodyJson, _ := json.Marshal(&props)
 
 	_ = logRepo.CreateLog(&models.Log{
@@ -36,14 +36,14 @@ func Data(c *gin.Context, code int, data interface{}, message string, requestDet
 	c.JSON(code, props)
 }
 
-func Error(c *gin.Context, code int, err error, requestDetail interface{}) {
+func Error(c *gin.Context, code int, friendlyErrorForClient error, requestDetailForLogPurpose interface{}) {
 	props := &Props{
 		Code:    code,
 		Data:    nil,
-		Message: err.Error(),
+		Message: friendlyErrorForClient.Error(),
 	}
 
-	requestDetailJson, _ := json.Marshal(&requestDetail)
+	requestDetailJson, _ := json.Marshal(&requestDetailForLogPurpose)
 	responseJson, _ := json.Marshal(&props)
 
 	_ = logRepo.CreateLog(&models.Log{
