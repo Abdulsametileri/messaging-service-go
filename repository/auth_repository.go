@@ -39,9 +39,10 @@ func (p *AuthRepository) ExistUser(userName string) (bool, error) {
 	return true, nil
 }
 
-func (p *AuthRepository) GetUser(user *models.User) (*models.User, error) {
+func (p *AuthRepository) GetUser(userName, password string) (*models.User, error) {
+	var user *models.User
 	err := p.db.Model(&models.User{}).
-		First(&user, "user_name = ? AND password = ?", user.UserName, user.Password).
+		First(&user, "user_name = ? AND password = ?", userName, password).
 		Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -49,7 +50,7 @@ func (p *AuthRepository) GetUser(user *models.User) (*models.User, error) {
 	}
 
 	if err != nil {
-		return &models.User{}, err
+		return user, err
 	}
 
 	return user, nil

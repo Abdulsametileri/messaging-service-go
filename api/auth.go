@@ -62,7 +62,7 @@ func login(c *gin.Context) {
 
 	authRepo := repository.GetAuthRepository()
 
-	user, err := authRepo.GetUser(&userModel)
+	user, err := authRepo.GetUser(userModel.UserName, userModel.Password)
 
 	if err != nil && !c.GetBool("test") {
 		Error(c, http.StatusBadRequest, err, "Error occured in the database. "+err.Error())
@@ -78,7 +78,7 @@ func login(c *gin.Context) {
 
 	t, err := createJwtToken(claims)
 	if err != nil {
-		Error(c, http.StatusBadRequest, err, "create jwt token error in login")
+		Error(c, http.StatusBadRequest, err, "create jwt token error")
 		return
 	}
 
