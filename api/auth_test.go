@@ -47,9 +47,8 @@ var _ = Describe("Auth API Endpoints Test", func() {
 			register(c)
 
 			res := fillResponse(w)
-
 			Expect(res.Message).ShouldNot(Equal(ErrUserAlreadyExist.Error()))
-			Expect(res.Code).Should(Equal(http.StatusOK))
+			Expect(res.Code).Should(Equal(http.StatusCreated))
 		})
 
 		It("user is already exist", func() {
@@ -165,14 +164,12 @@ func mockCreateUser(mock sqlmock.Sqlmock, newId int) models.User {
 		Password: helpers.Sha256String("123456"),
 	}
 
-	const sqlInsert = `INSERT INTO "user" 
-					("created_at","updated_at","deleted_at","user_name","password") 
-					VALUES ($1,$2,$3,$4,$5) RETURNING "id"`
+	const sqlInsert = `INSERT INTO "user" ("created_at","updated_at","deleted_at","user_name","password","muted_user_ids") VALUES ($1,$2,$3,$4,$5,$6) RETURNING "id"`
 
 	mock.ExpectBegin()
 
 	mock.ExpectQuery(sqlInsert).
-		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), user.UserName, user.Password).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg(), user.UserName, user.Password, sqlmock.AnyArg()).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(newId))
 
 	mock.ExpectCommit()

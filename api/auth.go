@@ -28,8 +28,6 @@ func register(c *gin.Context) {
 
 	userModel := vm.ToModel()
 
-	c.Set(c.FullPath(), userModel)
-
 	authRepo := repository.GetAuthRepository()
 
 	isExist, err := authRepo.ExistUser(userModel.UserName)
@@ -61,8 +59,6 @@ func login(c *gin.Context) {
 	}
 
 	userModel := vm.ToModel()
-
-	c.Set(c.FullPath(), userModel)
 
 	authRepo := repository.GetAuthRepository()
 

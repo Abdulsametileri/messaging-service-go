@@ -77,7 +77,7 @@ func sendMessage(c *gin.Context) {
 	if err != nil {
 		Error(c, http.StatusBadRequest,
 			errors.New("Receiver user does not exist."),
-			fmt.Sprintf("User id=%d send message not existed user!! receiverUsername=%s", userClaims.Id, c.Query("user_name")),
+			fmt.Sprintf("User id=%d send message not existed user!! receiverUsername=%s", userClaims.Id, userName),
 		)
 		return
 	}
