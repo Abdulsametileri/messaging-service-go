@@ -15,11 +15,11 @@ var db *gorm.DB
 func Setup() *gorm.DB {
 	constr := fmt.Sprintf(
 		"host=%s user=%s password=%s dbname=%s port=%s",
-		viper.GetString("DbHost"),
-		viper.GetString("DbUser"),
-		viper.GetString("DbPass"),
-		viper.GetString("DbName"),
-		viper.GetString("DbPort"),
+		viper.GetString("DB_HOST"),
+		viper.GetString("DB_USER"),
+		viper.GetString("DB_PASSWORD"),
+		viper.GetString("DB_NAME"),
+		viper.GetString("DB_PORT"),
 	)
 
 	var err error

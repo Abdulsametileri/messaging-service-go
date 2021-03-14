@@ -3,12 +3,12 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/Abdulsametileri/messaging-service/config"
 	"github.com/Abdulsametileri/messaging-service/models"
 	"github.com/Abdulsametileri/messaging-service/repository"
 	"github.com/Abdulsametileri/messaging-service/viewmodels"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"net/http"
 	"time"
 )
@@ -87,7 +87,7 @@ func login(c *gin.Context) {
 
 func createJwtToken(claims *viewmodels.UserClaim) (string, error) {
 	t := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := t.SignedString(config.JwtSecretKey)
+	tokenString, err := t.SignedString([]byte(viper.GetString("JWT_SECRET_KEY")))
 	return tokenString, err
 }
 

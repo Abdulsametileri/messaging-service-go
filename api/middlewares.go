@@ -2,10 +2,10 @@ package api
 
 import (
 	"errors"
-	"github.com/Abdulsametileri/messaging-service/config"
 	"github.com/Abdulsametileri/messaging-service/viewmodels"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 	"net/http"
 	"strings"
 )
@@ -45,7 +45,7 @@ func jwtMiddleware(c *gin.Context) {
 	claims := &viewmodels.UserClaim{}
 
 	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
-		return config.JwtSecretKey, nil
+		return []byte(viper.GetString("JWT_SECRET_KEY")), nil
 	})
 
 	if err != nil {

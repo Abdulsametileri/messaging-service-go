@@ -1,11 +1,22 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"github.com/spf13/viper"
+	"log"
+)
 
 func Setup() {
-	viper.SetDefault("DbHost", "localhost")
-	viper.SetDefault("DbName", "messaging-service")
-	viper.SetDefault("DbUser", "messaging-service")
-	viper.SetDefault("DbPass", "123456")
-	viper.SetDefault("DbPort", "5432")
+	if IsDebug {
+		viper.Set("DB_HOST", "localhost")
+		viper.Set("DB_NAME", "messaging-service")
+		viper.Set("DB_USER", "messaging-service")
+		viper.Set("DB_PASSWORD", "123456")
+		viper.Set("DB_PORT", "5432")
+	} else {
+		viper.SetConfigFile(".env")
+
+		if err := viper.ReadInConfig(); err != nil {
+			log.Fatalf("Error while reading config file %s", err)
+		}
+	}
 }
