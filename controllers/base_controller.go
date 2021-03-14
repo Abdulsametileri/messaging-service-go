@@ -3,6 +3,7 @@ package controllers
 import (
 	"encoding/json"
 	"github.com/Abdulsametileri/messaging-service/models"
+	"github.com/Abdulsametileri/messaging-service/services/authservice"
 	"github.com/Abdulsametileri/messaging-service/services/logservice"
 	"github.com/gin-gonic/gin"
 )
@@ -64,4 +65,18 @@ func (bc *baseController) Error(c *gin.Context, code int, friendlyErrorForClient
 	})
 
 	c.AbortWithStatusJSON(code, props)
+}
+
+func getUserClaims(c *gin.Context) (claims authservice.UserClaim) {
+	cl, ok := c.Get("claims")
+	if !ok {
+		return claims
+	}
+
+	userClaims, ok := cl.(authservice.UserClaim)
+	if !ok {
+		return claims
+	}
+
+	return userClaims
 }

@@ -3,25 +3,21 @@ package controllers
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/gin-gonic/gin"
-	"github.com/magiconair/properties/assert"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
 func TestUserController(t *testing.T) {
-	as := &authSvc{}
 	us := &userSvc{}
+	as := &authSvc{}
 	bctl := &baseController{ls: &logSvc{}}
 
 	userCtl := NewUserController(bctl, as, us)
 	gin.SetMode(gin.TestMode)
-	router := gin.Default()
-	v1 := router.Group("api/v1")
-	{
-		v1.POST("register", userCtl.Register)
-	}
 
 	t.Run("Register", func(t *testing.T) {
 		t.Run("Success", func(t *testing.T) {
@@ -61,31 +57,49 @@ func TestUserController(t *testing.T) {
 	})
 
 	t.Run("Login", func(t *testing.T) {
-		reqBody := map[string]string{
-			"user_name": "abdulsamet",
-			"password":  "123456",
-		}
+		t.Run("Success", func(t *testing.T) {
+			reqBody := map[string]string{
+				"user_name": "abdulsamet",
+				"password":  "123456",
+			}
 
-		w := httptest.NewRecorder()
-		c, _ := gin.CreateTestContext(w)
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
 
-		payload, _ := json.Marshal(reqBody)
-		request := httptest.NewRequest("POST", "/api/v1/login", bytes.NewBuffer(payload))
-		c.Request = request
+			payload, _ := json.Marshal(reqBody)
+			request := httptest.NewRequest("POST", "/api/v1/login", bytes.NewBuffer(payload))
+			c.Request = request
 
-		userCtl.Login(c)
+			userCtl.Login(c)
 
-		assert.Equal(t, http.StatusOK, w.Code)
+			assert.Equal(t, http.StatusOK, w.Code)
 
-		resBody := Props{}
-		json.NewDecoder(w.Body).Decode(&resBody)
+			resBody := Props{}
+			json.NewDecoder(w.Body).Decode(&resBody)
 
-		expectedResBody := Props{
-			Code:    http.StatusOK,
-			Data:    map[string]interface{}{"token": "nice-token"},
-			Message: "",
-		}
+			fmt.Println(resBody.Data)
 
-		assert.Equal(t, expectedResBody.Data, resBody.Data)
+			res, _ := resBody.Data.(map[string]interface{})
+
+			assert.Equal(t, res["token"], "mock-token")
+		})
+		t.Run("Failed to login (not existed user)", func(t *testing.T) {
+			reqBody := map[string]string{
+				"user_name": "huhu",
+				"password":  "123456",
+			}
+
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			payload, _ := json.Marshal(reqBody)
+			request := httptest.NewRequest("POST", "/api/v1/login", bytes.NewBuffer(payload))
+			c.Request = request
+
+			userCtl.Login(c)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+		})
 	})
+
 }

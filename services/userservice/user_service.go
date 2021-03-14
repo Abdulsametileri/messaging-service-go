@@ -11,6 +11,8 @@ type UserService interface {
 	CreateUser(user *models.User) error
 	ExistUser(userName string) (bool, error)
 	GetUser(userName, password string) (*models.User, error)
+	GetUserByID(id int) (*models.User, error)
+	SaveUser(user *models.User) error
 }
 
 type userService struct {
@@ -51,4 +53,12 @@ func (us *userService) GetUser(userName, password string) (*models.User, error) 
 	}
 
 	return user, nil
+}
+
+func (us *userService) GetUserByID(id int) (*models.User, error) {
+	return us.Repo.GetUserByID(id)
+}
+
+func (us *userService) SaveUser(user *models.User) error {
+	return us.Repo.SaveUser(user)
 }

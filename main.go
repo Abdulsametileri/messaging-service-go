@@ -4,6 +4,7 @@ import (
 	"github.com/Abdulsametileri/messaging-service/config"
 	"github.com/Abdulsametileri/messaging-service/controllers"
 	"github.com/Abdulsametileri/messaging-service/database"
+	"github.com/Abdulsametileri/messaging-service/middlewares"
 	"github.com/Abdulsametileri/messaging-service/repository/logrepo"
 	"github.com/Abdulsametileri/messaging-service/repository/userrepo"
 	"github.com/Abdulsametileri/messaging-service/services/authservice"
@@ -49,6 +50,8 @@ func main() {
 	{
 		v1.POST("register", userCtl.Register)
 		v1.POST("login", userCtl.Login)
+
+		v1.GET("mutateUser", middlewares.RequireLoggedIn(baseCtl), userCtl.MutateUser)
 	}
 
 	err := router.Run(":8080")

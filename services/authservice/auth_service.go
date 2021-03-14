@@ -15,6 +15,7 @@ type UserClaim struct {
 
 type AuthService interface {
 	CreateJwtToken(user *models.User) (string, error)
+	ParseJwtToken(token string) (*UserClaim, error)
 }
 
 type authService struct{}
@@ -34,4 +35,23 @@ func (as *authService) CreateJwtToken(user *models.User) (string, error) {
 
 	tokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return tokenClaims.SignedString([]byte(viper.GetString("JWT_SECRET_KEY")))
+}
+
+func (as *authService) ParseJwtToken(token string) (*UserClaim, error) {
+	tokenClaims, err := jwt.ParseWithClaims(
+		token,
+		&UserClaim{},
+		func(token *jwt.Token) (interface{}, error) {
+			return []byte(viper.GetString("JWT_SECRET_KEY")), nil
+		},
+	)
+
+	if tokenClaims != nil {
+		claims, ok := tokenClaims.Claims.(*UserClaim)
+		if ok && tokenClaims.Valid {
+			return claims, nil
+		}
+	}
+
+	return nil, err
 }

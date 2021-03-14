@@ -9,6 +9,8 @@ type Repo interface {
 	CreateUser(user *models.User) error
 	ExistUser(userName string) (models.User, error)
 	GetUser(userName, password string) (*models.User, error)
+	GetUserByID(id int) (*models.User, error)
+	SaveUser(user *models.User) error
 }
 
 type userRepo struct {
@@ -39,4 +41,14 @@ func (ur *userRepo) GetUser(userName, password string) (*models.User, error) {
 		Error
 
 	return user, err
+}
+
+func (ur *userRepo) GetUserByID(id int) (*models.User, error) {
+	var user *models.User
+	err := ur.db.Model(&models.User{}).First(&user, id).Error
+	return user, err
+}
+
+func (ur *userRepo) SaveUser(user *models.User) error {
+	return ur.db.Save(&user).Error
 }

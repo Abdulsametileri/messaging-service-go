@@ -22,3 +22,10 @@ func LowerTrimString(text string) string {
 func HashPassword(text string) string {
 	return Sha256String(text)
 }
+
+func StripBearer(tok string) (string, error) {
+	if len(tok) > 6 && strings.ToLower(tok[0:7]) == "bearer " {
+		return tok[7:], nil
+	}
+	return tok, nil
+}
