@@ -107,26 +107,33 @@ func (ctl *userController) Login(c *gin.Context) {
 }
 
 func (ctl *userController) MutateUser(c *gin.Context) {
-	userClaims := getUserClaims(c)
+	userId := c.GetInt("user_id")
 
-	user, err := ctl.us.GetUserByID(userClaims.Id)
-	if err != nil {
-		ctl.base.Error(c, http.StatusBadRequest, err, fmt.Sprintf("userClaimsId=%d does not found in the database", userClaims.Id))
+	if userId == 0 {
+		ctl.base.Error(c, http.StatusBadRequest,
+			errors.New("Invalid user"),
+			fmt.Sprintf("userClaimsId=%d does not found in the database", userId))
 		return
 	}
 
-	mutateThisUserId, err := strconv.Atoi(c.Query("mutateUserId"))
+	user, err := ctl.us.GetUserByID(userId)
 	if err != nil {
+		ctl.base.Error(c, http.StatusBadRequest, err, fmt.Sprintf("userClaimsId=%d does not found in the database", userId))
+		return
+	}
+
+	mutateThisUserId, err := strconv.Atoi(c.Param("mutateUserId"))
+	if err != nil || mutateThisUserId == 0 {
 		logMsg := fmt.Sprintf("User id=%d tried to pass api via invalid param %s",
-			userClaims.Id, c.Query("mutateUserId"),
+			user.ID, c.Param("mutateUserId"),
 		)
 		ctl.base.Error(c, http.StatusBadRequest, errors.New("invalid param"), logMsg)
 		return
 	}
 
-	if mutateThisUserId == userClaims.Id {
+	if mutateThisUserId == user.ID {
 		ctl.base.Error(c, http.StatusBadRequest, errors.New("You cannot mutate yourself, sorry."),
-			fmt.Sprintf("User id=%d tried to mutate yourself", userClaims.Id))
+			fmt.Sprintf("User id=%d tried to mutate yourself", user.ID))
 		return
 	}
 

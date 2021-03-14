@@ -50,7 +50,9 @@ func RequireLoggedIn(base controllers.BaseController) gin.HandlerFunc {
 			return
 		}
 
-		c.Set("claims", *claims)
+		c.Set("user_id", claims.Id)
+		c.Set("user_name", claims.UserName)
+
 		c.Next()
 	}
 }

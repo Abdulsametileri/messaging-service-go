@@ -51,7 +51,7 @@ func main() {
 		v1.POST("register", userCtl.Register)
 		v1.POST("login", userCtl.Login)
 
-		v1.GET("mutateUser", middlewares.RequireLoggedIn(baseCtl), userCtl.MutateUser)
+		v1.GET("mutateUser/:mutateUserId", middlewares.RequireLoggedIn(baseCtl), userCtl.MutateUser)
 	}
 
 	err := router.Run(":8080")

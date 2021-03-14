@@ -11,6 +11,13 @@ import (
 	"testing"
 )
 
+func performRequest(r http.Handler, method, path string) *httptest.ResponseRecorder {
+	req, _ := http.NewRequest(method, path, nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	return w
+}
+
 func TestUserController(t *testing.T) {
 	us := &userSvc{}
 	as := &authSvc{}
@@ -102,4 +109,99 @@ func TestUserController(t *testing.T) {
 		})
 	})
 
+	t.Run("MutateUser", func(t *testing.T) {
+		t.Run("Getting invalid user id error", func(t *testing.T) {
+			w := httptest.NewRecorder()
+
+			c, _ := gin.CreateTestContext(w)
+
+			userCtl.MutateUser(c)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+		})
+		t.Run("Getting error for non exist user id in the database", func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			c.Set("user_id", -1)
+
+			userCtl.MutateUser(c)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+		})
+		t.Run("Getting error for url parameter error mutateUserId", func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			c.Set("user_id", 3)
+
+			userCtl.MutateUser(c)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+		})
+		t.Run("Getting error when user try to mutate yourself ", func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			c.Set("user_id", 3)
+			c.Params = []gin.Param{
+				{
+					Key:   "mutateUserId",
+					Value: "3",
+				},
+			}
+
+			userCtl.MutateUser(c)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+		})
+		t.Run("Getting error when mutated user does not exist", func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			c.Set("user_id", 3)
+			c.Params = []gin.Param{
+				{
+					Key:   "mutateUserId",
+					Value: "-1",
+				},
+			}
+
+			userCtl.MutateUser(c)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+		})
+		t.Run("Getting error user try to mutate same user again", func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			c.Set("user_id", 1)
+			c.Params = []gin.Param{
+				{
+					Key:   "mutateUserId",
+					Value: "1000",
+				},
+			}
+
+			userCtl.MutateUser(c)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+		})
+		t.Run("user will mutate another user successfully?", func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			c.Set("user_id", 1)
+			c.Params = []gin.Param{
+				{
+					Key:   "mutateUserId",
+					Value: "3",
+				},
+			}
+
+			userCtl.MutateUser(c)
+
+			assert.Equal(t, http.StatusOK, w.Code)
+		})
+	})
 }

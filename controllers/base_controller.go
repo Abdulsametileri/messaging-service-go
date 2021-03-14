@@ -70,12 +70,12 @@ func (bc *baseController) Error(c *gin.Context, code int, friendlyErrorForClient
 func getUserClaims(c *gin.Context) (claims authservice.UserClaim) {
 	cl, ok := c.Get("claims")
 	if !ok {
-		return claims
+		return authservice.UserClaim{}
 	}
 
 	userClaims, ok := cl.(authservice.UserClaim)
 	if !ok {
-		return claims
+		return authservice.UserClaim{}
 	}
 
 	return userClaims

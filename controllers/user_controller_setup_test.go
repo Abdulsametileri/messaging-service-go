@@ -1,9 +1,11 @@
 package controllers
 
 import (
+	"errors"
 	"github.com/Abdulsametileri/messaging-service/helpers"
 	"github.com/Abdulsametileri/messaging-service/models"
 	"github.com/Abdulsametileri/messaging-service/services/authservice"
+	"github.com/lib/pq"
 )
 
 type authSvc struct{}
@@ -28,7 +30,18 @@ func (ls *logSvc) CreateLog(log *models.Log) error {
 type userSvc struct{}
 
 func (us *userSvc) GetUserByID(id int) (*models.User, error) {
-	return &models.User{}, nil
+	if id == -1 {
+		return nil, errors.New("non existed user")
+	}
+
+	return &models.User{
+		BaseModel: models.BaseModel{
+			ID: id,
+		},
+		UserName:     "abdulsamet",
+		Password:     "123456",
+		MutedUserIDs: pq.Int32Array{1000},
+	}, nil
 }
 
 func (us *userSvc) SaveUser(user *models.User) error {
