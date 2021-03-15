@@ -6,9 +6,11 @@ import (
 	"github.com/Abdulsametileri/messaging-service/database"
 	"github.com/Abdulsametileri/messaging-service/middlewares"
 	"github.com/Abdulsametileri/messaging-service/repository/logrepo"
+	"github.com/Abdulsametileri/messaging-service/repository/messagerepo"
 	"github.com/Abdulsametileri/messaging-service/repository/userrepo"
 	"github.com/Abdulsametileri/messaging-service/services/authservice"
 	"github.com/Abdulsametileri/messaging-service/services/logservice"
+	"github.com/Abdulsametileri/messaging-service/services/messageservice"
 	"github.com/Abdulsametileri/messaging-service/services/userservice"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -26,6 +28,7 @@ func main() {
 	*/
 	userRepo := userrepo.NewUserRepo(db)
 	logRepo := logrepo.NewLogRepo(db)
+	messageRepo := messagerepo.NewMessageRepo(db)
 
 	/*
 		====== Setup services ===========
@@ -33,16 +36,26 @@ func main() {
 	authService := authservice.NewAuthService()
 	userService := userservice.NewUserService(userRepo)
 	logService := logservice.NewLogService(logRepo)
+	messageService := messageservice.NewMessageService(messageRepo)
 
 	/*
 		====== Setup controllers ========
 	*/
 	baseCtl := controllers.NewBaseController(logService)
 	userCtl := controllers.NewUserController(baseCtl, authService, userService)
+	messageCtl := controllers.NewMessageController(baseCtl, userService, messageService)
 
-	var router = gin.Default()
-	router.Use(gin.Logger())
-	router.Use(gin.Recovery())
+	if !config.IsDebug {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
+	var router = gin.New()
+
+	if !config.IsDebug {
+		router.Use(gin.Logger())
+	}
+
+	router.Use(middlewares.CustomRecoveryMiddleware(baseCtl))
 
 	router.GET("/ping", func(c *gin.Context) { c.String(http.StatusOK, "pong") })
 
@@ -53,28 +66,13 @@ func main() {
 
 		v1.GET("mutateUser/:mutateUserId", middlewares.RequireLoggedIn(baseCtl), userCtl.MutateUser)
 		v1.GET("users", middlewares.RequireLoggedIn(baseCtl), userCtl.GetUserList)
+
+		v1.GET("messagesWith/:userName", middlewares.RequireLoggedIn(baseCtl), messageCtl.GetMessages)
+		v1.POST("sendMessage/:userName", middlewares.RequireLoggedIn(baseCtl), messageCtl.SendMessage)
 	}
 
 	err := router.Run(":8080")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-
-	/*fmt.Println("Bismillah")
-	config.Setup()
-
-	db := database.Setup()
-	database.Migrate()
-
-	repository.Setup(repository.LogRepository{}, db)
-	repository.Setup(repository.AuthRepository{}, db)
-	repository.Setup(repository.UserRepository{}, db)
-	repository.Setup(repository.MessageRepository{}, db)
-
-	router := api.SetupRouter()
-
-	err := router.Run(":8080")
-	if err != nil {
-		log.Fatal(err.Error())
-	}*/
 }

@@ -3,7 +3,6 @@ package controllers
 import (
 	"errors"
 	"fmt"
-	"github.com/Abdulsametileri/messaging-service/api"
 	"github.com/Abdulsametileri/messaging-service/helpers"
 	"github.com/Abdulsametileri/messaging-service/models"
 	"github.com/Abdulsametileri/messaging-service/services/authservice"
@@ -78,7 +77,7 @@ func (ctl *userController) Login(c *gin.Context) {
 	var vm UserInput
 
 	if err := c.ShouldBindJSON(&vm); err != nil {
-		api.Error(c, 400, err, "Invalid body"+err.Error())
+		ctl.base.Error(c, 400, err, "Invalid body"+err.Error())
 		return
 	}
 
@@ -110,13 +109,6 @@ func (ctl *userController) Login(c *gin.Context) {
 func (ctl *userController) GetUserList(c *gin.Context) {
 	userId := c.GetInt("user_id")
 
-	if userId == 0 {
-		ctl.base.Error(c, http.StatusBadRequest,
-			errors.New("Invalid user"),
-			fmt.Sprintf("userClaimsId=%d does not found in the database", userId))
-		return
-	}
-
 	user, err := ctl.us.GetUserByID(userId)
 	if err != nil {
 		ctl.base.Error(c, http.StatusBadRequest, err, fmt.Sprintf("User Claims Id=%d does not found in the database.", userId))
@@ -142,13 +134,6 @@ func (ctl *userController) GetUserList(c *gin.Context) {
 
 func (ctl *userController) MutateUser(c *gin.Context) {
 	userId := c.GetInt("user_id")
-
-	if userId == 0 {
-		ctl.base.Error(c, http.StatusBadRequest,
-			errors.New("Invalid user"),
-			fmt.Sprintf("userClaimsId=%d does not found in the database", userId))
-		return
-	}
 
 	user, err := ctl.us.GetUserByID(userId)
 	if err != nil {

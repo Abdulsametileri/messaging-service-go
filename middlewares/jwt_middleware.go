@@ -50,6 +50,16 @@ func RequireLoggedIn(base controllers.BaseController) gin.HandlerFunc {
 			return
 		}
 
+		if claims.Id == 0 {
+			base.Error(c, http.StatusBadRequest, errors.New("Invalid user"), "user id = 0")
+			return
+		}
+
+		if claims.UserName == "" {
+			base.Error(c, http.StatusBadRequest, errors.New("Invalid username"), "empty user name")
+			return
+		}
+
 		c.Set("user_id", claims.Id)
 		c.Set("user_name", claims.UserName)
 

@@ -10,6 +10,7 @@ type Repo interface {
 	ExistUser(userName string) (models.User, error)
 	GetUser(userName, password string) (*models.User, error)
 	GetUserByID(id int) (*models.User, error)
+	GetUserByUserName(userName string) (user models.User, err error)
 	SaveUser(user *models.User) error
 	GetUserList(userId int, mutatedUserIdsCond string) (users []models.User, err error)
 }
@@ -48,6 +49,11 @@ func (ur *userRepo) GetUserByID(id int) (*models.User, error) {
 	var user *models.User
 	err := ur.db.Model(&models.User{}).First(&user, id).Error
 	return user, err
+}
+
+func (ur *userRepo) GetUserByUserName(userName string) (user models.User, err error) {
+	err = ur.db.Model(&models.User{}).First(&user, "user_name = ?", userName).Error
+	return
 }
 
 func (ur *userRepo) SaveUser(user *models.User) error {

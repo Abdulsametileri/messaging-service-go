@@ -103,15 +103,6 @@ func TestUserController(t *testing.T) {
 	})
 
 	t.Run("MutateUser", func(t *testing.T) {
-		t.Run("Getting invalid user id error", func(t *testing.T) {
-			w := httptest.NewRecorder()
-
-			c, _ := gin.CreateTestContext(w)
-
-			userCtl.MutateUser(c)
-
-			assert.Equal(t, http.StatusBadRequest, w.Code)
-		})
 		t.Run("Getting error for non exist user id in the database", func(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
@@ -168,11 +159,11 @@ func TestUserController(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)
 
-			c.Set("user_id", 1)
+			c.Set("user_id", 3)
 			c.Params = []gin.Param{
 				{
 					Key:   "mutateUserId",
-					Value: "1000",
+					Value: "1",
 				},
 			}
 
@@ -199,15 +190,6 @@ func TestUserController(t *testing.T) {
 	})
 
 	t.Run("GetUserList", func(t *testing.T) {
-		t.Run("Getting invalid user id error", func(t *testing.T) {
-			w := httptest.NewRecorder()
-
-			c, _ := gin.CreateTestContext(w)
-
-			userCtl.GetUserList(c)
-
-			assert.Equal(t, http.StatusBadRequest, w.Code)
-		})
 		t.Run("Getting error for non exist user id in the database", func(t *testing.T) {
 			w := httptest.NewRecorder()
 			c, _ := gin.CreateTestContext(w)

@@ -15,7 +15,6 @@ services:
     build: "."
     ports:
       - "8080"
-    #restart: on-failure
     deploy:
       replicas: 3
     depends_on:

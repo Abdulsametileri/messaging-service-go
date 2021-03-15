@@ -14,6 +14,7 @@ type UserService interface {
 	ExistUser(userName string) (bool, error)
 	GetUser(userName, password string) (*models.User, error)
 	GetUserByID(id int) (*models.User, error)
+	GetUserByUserName(userName string) (user models.User, err error)
 	SaveUser(user *models.User) error
 	GetUserList(userId int, mutatedUserIds pq.Int32Array) (users []models.User, err error)
 }
@@ -62,11 +63,18 @@ func (us *userService) GetUserByID(id int) (*models.User, error) {
 	return us.Repo.GetUserByID(id)
 }
 
+func (us *userService) GetUserByUserName(userName string) (user models.User, err error) {
+	return us.Repo.GetUserByUserName(userName)
+}
+
 func (us *userService) SaveUser(user *models.User) error {
 	return us.Repo.SaveUser(user)
 }
 
 func (us *userService) GetUserList(userId int, mutatedUserIds pq.Int32Array) (users []models.User, err error) {
+	if mutatedUserIds == nil {
+		return us.Repo.GetUserList(userId, "")
+	}
 	v, _ := mutatedUserIds.Value()
 	mutatedUserCondition := "NOT id = ANY('{values}')"
 	mutatedUserCondition = strings.Replace(mutatedUserCondition, "{values}", v.(string), 1)

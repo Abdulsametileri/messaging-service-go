@@ -27,7 +27,35 @@ func (ls *logSvc) CreateLog(log *models.Log) error {
 
 // ----------
 
+var ddduser = models.User{
+	BaseModel: models.BaseModel{ID: 1},
+	UserName:  "ddd",
+}
+
+var abcuser = models.User{
+	BaseModel: models.BaseModel{ID: 2},
+	UserName:  "abc",
+}
+
+var mutaterUser = models.User{
+	BaseModel:    models.BaseModel{ID: 3},
+	UserName:     "mutaterUser",
+	MutedUserIDs: pq.Int32Array{1},
+}
+
 type userSvc struct{}
+
+func (us *userSvc) GetUserByUserName(userName string) (user models.User, err error) {
+	if userName == "ddd" {
+		return ddduser, nil
+	} else if userName == "abc" {
+		return abcuser, nil
+	} else if userName == "mutateruser" {
+		return mutaterUser, nil
+	}
+
+	return models.User{}, errors.New("record not found")
+}
 
 func (us *userSvc) GetUserList(userId int, mutatedUserIds pq.Int32Array) (users []models.User, err error) {
 	ret := make([]models.User, 0)
@@ -53,6 +81,18 @@ func (us *userSvc) GetUserList(userId int, mutatedUserIds pq.Int32Array) (users 
 func (us *userSvc) GetUserByID(id int) (*models.User, error) {
 	if id == -1 {
 		return nil, errors.New("non existed user")
+	}
+
+	if id == 1 {
+		return &ddduser, nil
+	}
+
+	if id == 2 {
+		return &abcuser, nil
+	}
+
+	if id == 3 {
+		return &mutaterUser, nil
 	}
 
 	return &models.User{
