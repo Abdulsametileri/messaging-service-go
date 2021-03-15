@@ -26,6 +26,7 @@ type UserInput struct {
 type UserController interface {
 	Register(*gin.Context)
 	Login(*gin.Context)
+	GetUserList(*gin.Context)
 	MutateUser(*gin.Context)
 }
 
@@ -104,6 +105,39 @@ func (ctl *userController) Login(c *gin.Context) {
 	}
 
 	ctl.base.Data(c, http.StatusOK, gin.H{"token": t}, "", fmt.Sprintf("token generated for the user id=%d", user.ID))
+}
+
+func (ctl *userController) GetUserList(c *gin.Context) {
+	userId := c.GetInt("user_id")
+
+	if userId == 0 {
+		ctl.base.Error(c, http.StatusBadRequest,
+			errors.New("Invalid user"),
+			fmt.Sprintf("userClaimsId=%d does not found in the database", userId))
+		return
+	}
+
+	user, err := ctl.us.GetUserByID(userId)
+	if err != nil {
+		ctl.base.Error(c, http.StatusBadRequest, err, fmt.Sprintf("User Claims Id=%d does not found in the database.", userId))
+		return
+	}
+
+	users, err := ctl.us.GetUserList(user.ID, user.MutedUserIDs)
+	if err != nil {
+		ctl.base.Error(c, http.StatusBadRequest, err, fmt.Sprintf("Error occured within GetUserList for the user id = %d.", user.ID))
+		return
+	}
+
+	ret := make([]gin.H, len(users))
+	for i, user := range users {
+		ret[i] = gin.H{
+			"id":        user.ID,
+			"user_name": user.UserName,
+		}
+	}
+
+	ctl.base.Data(c, 200, ret, "", fmt.Sprintf("User Id=%d and UserName=%s listed users.", user.ID, user.UserName))
 }
 
 func (ctl *userController) MutateUser(c *gin.Context) {

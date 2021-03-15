@@ -11,13 +11,6 @@ import (
 	"testing"
 )
 
-func performRequest(r http.Handler, method, path string) *httptest.ResponseRecorder {
-	req, _ := http.NewRequest(method, path, nil)
-	w := httptest.NewRecorder()
-	r.ServeHTTP(w, req)
-	return w
-}
-
 func TestUserController(t *testing.T) {
 	us := &userSvc{}
 	as := &authSvc{}
@@ -202,6 +195,55 @@ func TestUserController(t *testing.T) {
 			userCtl.MutateUser(c)
 
 			assert.Equal(t, http.StatusOK, w.Code)
+		})
+	})
+
+	t.Run("GetUserList", func(t *testing.T) {
+		t.Run("Getting invalid user id error", func(t *testing.T) {
+			w := httptest.NewRecorder()
+
+			c, _ := gin.CreateTestContext(w)
+
+			userCtl.GetUserList(c)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+		})
+		t.Run("Getting error for non exist user id in the database", func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			c.Set("user_id", -1)
+
+			userCtl.GetUserList(c)
+
+			assert.Equal(t, http.StatusBadRequest, w.Code)
+		})
+		t.Run("Get all users except requester user", func(t *testing.T) {
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+
+			c.Set("user_id", 1)
+
+			userCtl.GetUserList(c)
+
+			assert.Equal(t, http.StatusOK, w.Code)
+
+			resBody := Props{}
+			json.NewDecoder(w.Body).Decode(&resBody)
+
+			val, _ := resBody.Data.([]interface{})
+			cvr, convertOk := val[0].(map[string]interface{})
+
+			lenItems := len(val)
+			firstId := cvr["id"]
+			firstUserName := cvr["user_name"]
+
+			assert.True(t, convertOk)
+			assert.NotEqualValues(t, firstId, 0)
+			assert.NotEmpty(t, firstUserName)
+
+			assert.NotEqualValues(t, firstId, 1)
+			assert.EqualValues(t, lenItems, 3)
 		})
 	})
 }

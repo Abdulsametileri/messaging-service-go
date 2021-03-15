@@ -29,6 +29,27 @@ func (ls *logSvc) CreateLog(log *models.Log) error {
 
 type userSvc struct{}
 
+func (us *userSvc) GetUserList(userId int, mutatedUserIds pq.Int32Array) (users []models.User, err error) {
+	ret := make([]models.User, 0)
+
+	ret = append(ret, models.User{
+		BaseModel: models.BaseModel{ID: 2},
+		UserName:  "dddd",
+	})
+
+	ret = append(ret, models.User{
+		BaseModel: models.BaseModel{ID: 3},
+		UserName:  "abc",
+	})
+
+	ret = append(ret, models.User{
+		BaseModel: models.BaseModel{ID: 4},
+		UserName:  "abdulsamet",
+	})
+
+	return ret, nil
+}
+
 func (us *userSvc) GetUserByID(id int) (*models.User, error) {
 	if id == -1 {
 		return nil, errors.New("non existed user")

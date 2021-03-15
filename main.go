@@ -52,6 +52,7 @@ func main() {
 		v1.POST("login", userCtl.Login)
 
 		v1.GET("mutateUser/:mutateUserId", middlewares.RequireLoggedIn(baseCtl), userCtl.MutateUser)
+		v1.GET("users", middlewares.RequireLoggedIn(baseCtl), userCtl.GetUserList)
 	}
 
 	err := router.Run(":8080")

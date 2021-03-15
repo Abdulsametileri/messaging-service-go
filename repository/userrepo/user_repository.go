@@ -11,6 +11,7 @@ type Repo interface {
 	GetUser(userName, password string) (*models.User, error)
 	GetUserByID(id int) (*models.User, error)
 	SaveUser(user *models.User) error
+	GetUserList(userId int, mutatedUserIdsCond string) (users []models.User, err error)
 }
 
 type userRepo struct {
@@ -51,4 +52,12 @@ func (ur *userRepo) GetUserByID(id int) (*models.User, error) {
 
 func (ur *userRepo) SaveUser(user *models.User) error {
 	return ur.db.Save(&user).Error
+}
+
+func (ur *userRepo) GetUserList(userId int, mutatedUserIdsCond string) (users []models.User, err error) {
+	err = ur.db.Model(&models.User{}).
+		Where(mutatedUserIdsCond).
+		Where("id <> ?", userId).
+		Find(&users).Error
+	return
 }

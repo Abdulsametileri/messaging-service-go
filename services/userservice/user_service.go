@@ -4,7 +4,9 @@ import (
 	"errors"
 	"github.com/Abdulsametileri/messaging-service/models"
 	"github.com/Abdulsametileri/messaging-service/repository/userrepo"
+	"github.com/lib/pq"
 	"gorm.io/gorm"
+	"strings"
 )
 
 type UserService interface {
@@ -13,6 +15,7 @@ type UserService interface {
 	GetUser(userName, password string) (*models.User, error)
 	GetUserByID(id int) (*models.User, error)
 	SaveUser(user *models.User) error
+	GetUserList(userId int, mutatedUserIds pq.Int32Array) (users []models.User, err error)
 }
 
 type userService struct {
@@ -61,4 +64,12 @@ func (us *userService) GetUserByID(id int) (*models.User, error) {
 
 func (us *userService) SaveUser(user *models.User) error {
 	return us.Repo.SaveUser(user)
+}
+
+func (us *userService) GetUserList(userId int, mutatedUserIds pq.Int32Array) (users []models.User, err error) {
+	v, _ := mutatedUserIds.Value()
+	mutatedUserCondition := "NOT id = ANY('{values}')"
+	mutatedUserCondition = strings.Replace(mutatedUserCondition, "{values}", v.(string), 1)
+
+	return us.Repo.GetUserList(userId, mutatedUserCondition)
 }
