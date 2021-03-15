@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/Abdulsametileri/messaging-service/config"
 	"github.com/Abdulsametileri/messaging-service/controllers"
 	"github.com/Abdulsametileri/messaging-service/database"
@@ -71,6 +72,7 @@ func main() {
 		v1.POST("sendMessage/:userName", middlewares.RequireLoggedIn(baseCtl), messageCtl.SendMessage)
 	}
 
+	fmt.Println("Server Started")
 	err := router.Run(":8080")
 	if err != nil {
 		log.Fatal(err.Error())
