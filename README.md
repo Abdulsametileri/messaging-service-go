@@ -39,14 +39,13 @@ $ go run --tags dev main.go
 ```
 
 Örnek İstekler
-http://localhost/api/v1/register
-http://localhost/api/v1/sendMessage/abdulsamet
-http://localhost/api/v1/mutateUser/3
+http://localhost/api/v1/register <br/>
+http://localhost/api/v1/sendMessage/abdulsamet <br/>
+http://localhost/api/v1/mutateUser/3 <br/>
 
-nginx ile 80. porttan serve edildiği için portu url'e yazmıyoruz.
+NOT: nginx ile 80. porttan serve edildiği için portu url'e yazmıyoruz.
 Round robin algoritmasına göre oluşan yükü 3 containere dağıtıyor.
  
-docker-compose.yml
 ``` 
 api:
     ....
@@ -59,11 +58,11 @@ Docker compose dosyasındaki deploy replicas kısmından scale edilebilir.
 Eğer docker compose kullanılmadan ayağa kaldırılacaksa 8080 portunu istek yaparken 
 belirtmek gerekir.
 
-http://localhost:8080/api/v1/register
-http://localhost:8080/api/v1/sendMessage/abdulsamet
-http://localhost:8080/api/v1/mutateUser/3
+http://localhost:8080/api/v1/register <br/>
+http://localhost:8080/api/v1/sendMessage/abdulsamet <br/>
+http://localhost:8080/api/v1/mutateUser/3 <br/>
 
-### Godaki unit testleri kaldırmak ve coveragei görmek için
+### Godaki unit testleri kaldırmak ve coverage i görmek için
 
 ```
 $ go test --tags dev --cover ./...
