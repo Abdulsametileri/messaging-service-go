@@ -16,3 +16,19 @@ func TestSha256String(t *testing.T) {
 		}
 	}
 }
+
+func TestStripBearer(t *testing.T) {
+	testCases := []struct {
+		Token  string
+		Result string
+	}{
+		{"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcl9uYW1lIjoiYWJkdWxzYW1ldCIsImV4cCI6MTY0NzI3Njg0N30.ja-BZSyGLi5Kkj4oBxiGm-s0PK-aGKj2aJvXMabFjk0", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcl9uYW1lIjoiYWJkdWxzYW1ldCIsImV4cCI6MTY0NzI3Njg0N30.ja-BZSyGLi5Kkj4oBxiGm-s0PK-aGKj2aJvXMabFjk0"},
+		{"beaRer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcl9uYW1lIjoiYWJkdWxzYW1ldCIsImV4cCI6MTY0NzI3Njg0N30.ja-BZSyGLi5Kkj4oBxiGm-s0PK-aGKj2aJvXMabFjk0", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwidXNlcl9uYW1lIjoiYWJkdWxzYW1ldCIsImV4cCI6MTY0NzI3Njg0N30.ja-BZSyGLi5Kkj4oBxiGm-s0PK-aGKj2aJvXMabFjk0"},
+		{"testtt", "testtt"},
+	}
+	for _, test := range testCases {
+		if token, _ := StripBearer(test.Token); token != test.Result {
+			t.Errorf("Expected: %v, Want: %v", test.Result, token)
+		}
+	}
+}

@@ -1,38 +1,38 @@
-version: '3.3'
+version: '3.9'
 
 services:
-  api:
+  backend:
     build: "."
+    restart: always
     ports:
       - "8080"
-    #restart: on-failure
     deploy:
       replicas: 3
     depends_on:
-      - postgres
+      - db
 
-  postgres:
+  db:
     image: postgres:latest
+    restart: always
     container_name: messaging_service_db
     environment:
       - POSTGRES_USER=${DB_USER}
       - POSTGRES_PASSWORD=${DB_PASSWORD}
       - POSTGRES_DB=${DB_NAME}
-      - DATABASE_HOST=${DB_HOST}
     ports:
       - '5432:5432'
     volumes:
-      - "database_postgres:/var/lib/postgresql/data"
+      - db-data:/var/lib/postgresql/data
 
   nginx:
     image: nginx:latest
-    container_name: nginx
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+    restart: always
     ports:
       - "80:80"
+    volumes:
+      - "./nginx/nginx.conf:/etc/nginx/nginx.conf"
     depends_on:
-      - api
+      - backend
 
 volumes:
-  database_postgres:
+  db-data:

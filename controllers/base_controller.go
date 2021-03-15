@@ -1,14 +1,11 @@
-package api
+package controllers
 
 import (
 	"encoding/json"
 	"github.com/Abdulsametileri/messaging-service/models"
-	"github.com/Abdulsametileri/messaging-service/repository"
-	"github.com/Abdulsametileri/messaging-service/viewmodels"
+	"github.com/Abdulsametileri/messaging-service/services/logservice"
 	"github.com/gin-gonic/gin"
 )
-
-var logRepo = repository.GetLogRepository()
 
 type Props struct {
 	Code    int         `json:"code"`
@@ -16,7 +13,20 @@ type Props struct {
 	Message string      `json:"message"`
 }
 
-func Data(c *gin.Context, code int, data interface{}, message string, requestDetailForLogPurpose interface{}) {
+type BaseController interface {
+	Data(c *gin.Context, code int, data interface{}, message string, requestDetailForLogPurpose interface{})
+	Error(c *gin.Context, code int, friendlyErrorForClient error, requestDetailForLogPurpose interface{})
+}
+
+type baseController struct {
+	ls logservice.LogService
+}
+
+func NewBaseController(ls logservice.LogService) BaseController {
+	return &baseController{ls: ls}
+}
+
+func (bc *baseController) Data(c *gin.Context, code int, data interface{}, message string, requestDetailForLogPurpose interface{}) {
 	props := &Props{
 		Code:    code,
 		Data:    data,
@@ -26,7 +36,7 @@ func Data(c *gin.Context, code int, data interface{}, message string, requestDet
 	requestDetailJson, _ := json.Marshal(&requestDetailForLogPurpose)
 	responseBodyJson, _ := json.Marshal(&props)
 
-	_ = logRepo.CreateLog(&models.Log{
+	_ = bc.ls.CreateLog(&models.Log{
 		ApiPath:  c.FullPath(),
 		Request:  requestDetailJson,
 		Response: responseBodyJson,
@@ -36,7 +46,7 @@ func Data(c *gin.Context, code int, data interface{}, message string, requestDet
 	c.JSON(code, props)
 }
 
-func Error(c *gin.Context, code int, friendlyErrorForClient error, requestDetailForLogPurpose interface{}) {
+func (bc *baseController) Error(c *gin.Context, code int, friendlyErrorForClient error, requestDetailForLogPurpose interface{}) {
 	props := &Props{
 		Code:    code,
 		Data:    nil,
@@ -46,7 +56,7 @@ func Error(c *gin.Context, code int, friendlyErrorForClient error, requestDetail
 	requestDetailJson, _ := json.Marshal(&requestDetailForLogPurpose)
 	responseJson, _ := json.Marshal(&props)
 
-	_ = logRepo.CreateLog(&models.Log{
+	_ = bc.ls.CreateLog(&models.Log{
 		ApiPath:  c.FullPath(),
 		Request:  requestDetailJson,
 		Response: responseJson,
@@ -54,18 +64,4 @@ func Error(c *gin.Context, code int, friendlyErrorForClient error, requestDetail
 	})
 
 	c.AbortWithStatusJSON(code, props)
-}
-
-func getUserClaims(c *gin.Context) (claims viewmodels.UserClaim) {
-	cl, ok := c.Get("claims")
-	if !ok {
-		return claims
-	}
-
-	userClaims, ok := cl.(viewmodels.UserClaim)
-	if !ok {
-		return claims
-	}
-
-	return userClaims
 }
