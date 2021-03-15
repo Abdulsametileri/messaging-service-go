@@ -3,26 +3,22 @@ package repository
 import (
 	"database/sql"
 	"github.com/DATA-DOG/go-sqlmock"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
-	"testing"
+	"log"
 )
 
-func TestRepositories(t *testing.T) {
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Repository Layer Suite")
-}
-
-func mockDB() (*gorm.DB, sqlmock.Sqlmock) {
+func MockDB() (*gorm.DB, sqlmock.Sqlmock) {
 	var mock sqlmock.Sqlmock
 	var db *sql.DB
 	var err error
 
 	db, mock, err = sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
-	Expect(err).ShouldNot(HaveOccurred())
+
+	if err != nil {
+		log.Fatalf("can't create sqlmock: %s", err)
+	}
 
 	dialector := postgres.New(postgres.Config{
 		DSN:                  "sqlmock_db_0",
@@ -34,6 +30,9 @@ func mockDB() (*gorm.DB, sqlmock.Sqlmock) {
 		NamingStrategy: schema.NamingStrategy{SingularTable: true},
 	})
 
-	Expect(err).ShouldNot(HaveOccurred())
+	if err != nil {
+		log.Fatalf("can't open gorm connection: %s", err)
+	}
+
 	return gdb, mock
 }
