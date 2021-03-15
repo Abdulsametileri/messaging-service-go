@@ -38,7 +38,7 @@ tags'ı vermek gerekir.
 $ go run --tags dev main.go
 ```
 
-Örnek İstekler
+Örnek İstekler <br/>
 http://localhost/api/v1/register <br/>
 http://localhost/api/v1/sendMessage/abdulsamet <br/>
 http://localhost/api/v1/mutateUser/3 <br/>
