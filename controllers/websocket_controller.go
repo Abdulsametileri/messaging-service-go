@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"errors"
+	"fmt"
 	"github.com/Abdulsametileri/messaging-service/services/redisservice"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -43,10 +44,28 @@ func (w *webSocketController) ServeWs(c *gin.Context) {
 	}
 	defer conn.Close()
 
+	chatRoom := w.redisService.SubscribeChannel(chatId)
+	channel := chatRoom.Channel()
+	go func() {
+		for msg := range channel {
+			fmt.Println(msg)
+			conn.WriteMessage(websocket.TextMessage, []byte(msg.Payload))
+		}
+	}()
+
+	fmt.Println("user connected on ws")
+
 	for {
 		mt, _, err := conn.ReadMessage()
 		if mt == -1 || err != nil {
+			fmt.Print("user closed ws connection")
+			chatRoom.Close()
 			break
 		}
+		/*// publish et
+		// subs metodda conn write message olmalı
+		if err = conn.WriteMessage(mt, msg); err != nil {
+			return
+		}*/
 	}
 }

@@ -10,6 +10,17 @@ services:
       replicas: 3
     depends_on:
       - db
+      - redis
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - '6379:6379'
+    volumes:
+      - './infra/redisclient/redis.conf:/usr/local/etc/redis.conf'
+    entrypoint:
+      - redis-server
+      - /usr/local/etc/redis.conf
 
   db:
     image: postgres:latest

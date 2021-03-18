@@ -52,7 +52,7 @@ func main() {
 	*/
 	baseCtl := controllers.NewBaseController(logService)
 	userCtl := controllers.NewUserController(baseCtl, authService, userService)
-	messageCtl := controllers.NewMessageController(baseCtl, userService, messageService)
+	messageCtl := controllers.NewMessageController(baseCtl, userService, messageService, redisService)
 	websocketCtl := controllers.NewWebSocketController(baseCtl, redisService)
 
 	if !config.IsDebug {

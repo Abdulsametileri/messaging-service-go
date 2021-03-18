@@ -6,6 +6,7 @@ import (
 	"github.com/Abdulsametileri/messaging-service/helpers"
 	"github.com/Abdulsametileri/messaging-service/models"
 	"github.com/Abdulsametileri/messaging-service/services/messageservice"
+	"github.com/Abdulsametileri/messaging-service/services/redisservice"
 	"github.com/Abdulsametileri/messaging-service/services/userservice"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -26,16 +27,19 @@ type MessageController interface {
 }
 
 type messageController struct {
-	base BaseController
-	us   userservice.UserService
-	msgs messageservice.MessageService
+	base     BaseController
+	us       userservice.UserService
+	msgs     messageservice.MessageService
+	redissrv redisservice.RedisService
 }
 
-func NewMessageController(bctl BaseController, us userservice.UserService, msgs messageservice.MessageService) MessageController {
+func NewMessageController(bctl BaseController, us userservice.UserService, msgs messageservice.MessageService,
+	redisService redisservice.RedisService) MessageController {
 	return &messageController{
-		base: bctl,
-		us:   us,
-		msgs: msgs,
+		base:     bctl,
+		us:       us,
+		msgs:     msgs,
+		redissrv: redisService,
 	}
 }
 
@@ -143,4 +147,6 @@ func (mc *messageController) SendMessage(c *gin.Context) {
 
 	logMsg := fmt.Sprintf("%d -> %d send message %s", userId, receiverUser.ID, vm.Text)
 	mc.base.Data(c, http.StatusOK, nil, "", logMsg)
+
+	mc.redissrv.PublishMessage("1-2", vm.Text)
 }
