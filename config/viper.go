@@ -12,6 +12,9 @@ func Setup() {
 		viper.Set("DB_USER", "messaging-service")
 		viper.Set("DB_PASSWORD", "123456")
 		viper.Set("DB_PORT", "5432")
+
+		viper.Set("REDIS_URL", "localhost:6379")
+		viper.Set("REDIS_PASSWORD", "samet123")
 	} else {
 		viper.SetConfigFile(".env")
 

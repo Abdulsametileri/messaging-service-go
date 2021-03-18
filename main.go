@@ -5,6 +5,7 @@ import (
 	"github.com/Abdulsametileri/messaging-service/config"
 	"github.com/Abdulsametileri/messaging-service/controllers"
 	"github.com/Abdulsametileri/messaging-service/database"
+	"github.com/Abdulsametileri/messaging-service/infra/redisclient"
 	"github.com/Abdulsametileri/messaging-service/middlewares"
 	"github.com/Abdulsametileri/messaging-service/repository/logrepo"
 	"github.com/Abdulsametileri/messaging-service/repository/messagerepo"
@@ -12,6 +13,7 @@ import (
 	"github.com/Abdulsametileri/messaging-service/services/authservice"
 	"github.com/Abdulsametileri/messaging-service/services/logservice"
 	"github.com/Abdulsametileri/messaging-service/services/messageservice"
+	"github.com/Abdulsametileri/messaging-service/services/redisservice"
 	"github.com/Abdulsametileri/messaging-service/services/userservice"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -23,6 +25,11 @@ func main() {
 
 	db := database.Setup()
 	database.Migrate()
+
+	/*
+		====== Setup infra ==============
+	*/
+	redisClient := redisclient.NewRedisClient()
 
 	/*
 		====== Setup repositories =======
@@ -38,6 +45,7 @@ func main() {
 	userService := userservice.NewUserService(userRepo)
 	logService := logservice.NewLogService(logRepo)
 	messageService := messageservice.NewMessageService(messageRepo)
+	redisService := redisservice.NewRedisService(redisClient)
 
 	/*
 		====== Setup controllers ========
@@ -45,6 +53,7 @@ func main() {
 	baseCtl := controllers.NewBaseController(logService)
 	userCtl := controllers.NewUserController(baseCtl, authService, userService)
 	messageCtl := controllers.NewMessageController(baseCtl, userService, messageService)
+	websocketCtl := controllers.NewWebSocketController(baseCtl, redisService)
 
 	if !config.IsDebug {
 		gin.SetMode(gin.ReleaseMode)
@@ -52,7 +61,7 @@ func main() {
 
 	var router = gin.New()
 
-	if !config.IsDebug {
+	if config.IsDebug {
 		router.Use(gin.Logger())
 	}
 
@@ -71,6 +80,8 @@ func main() {
 		v1.GET("messagesWith/:userName", middlewares.RequireLoggedIn(baseCtl), messageCtl.GetMessages)
 		v1.POST("sendMessage/:userName", middlewares.RequireLoggedIn(baseCtl), messageCtl.SendMessage)
 	}
+
+	router.GET("ws/:chatId", websocketCtl.ServeWs)
 
 	fmt.Println("Server Started")
 	err := router.Run(":8080")
