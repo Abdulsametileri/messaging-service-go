@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/Abdulsametileri/messaging-service/cache"
 	"github.com/Abdulsametileri/messaging-service/config"
 	"github.com/Abdulsametileri/messaging-service/controllers"
 	"github.com/Abdulsametileri/messaging-service/database"
@@ -26,6 +27,9 @@ func main() {
 
 	db := database.Setup()
 	database.Migrate()
+
+	redisCache := cache.NewRedisCache()
+	_ = redisCache
 
 	/*
 		====== Setup repositories =======
@@ -55,7 +59,7 @@ func main() {
 
 	var router = gin.New()
 
-	if !config.IsDebug {
+	if config.IsDebug {
 		router.Use(gin.Logger())
 	}
 
