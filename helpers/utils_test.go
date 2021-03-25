@@ -45,3 +45,34 @@ func TestSortPgArrayAscending(t *testing.T) {
 		}
 	}
 }
+
+var arr = make(pq.Int32Array, 1000)
+
+func init() {
+	for i := 0; i < 1000; i++ {
+		arr = append(arr, int32(i))
+	}
+}
+
+func BenchmarkSearchNumber5InPgArray(b *testing.B) {
+	benchmarkSearchNumberInPgArray(b, 5)
+}
+
+func BenchmarkSearchNumber100InPgArray(b *testing.B) {
+	benchmarkSearchNumberInPgArray(b, 100)
+}
+
+func BenchmarkSearchNumber500InPgArray(b *testing.B) {
+	benchmarkSearchNumberInPgArray(b, 500)
+}
+
+func BenchmarkSearchNumber1000InPgArray(b *testing.B) {
+	benchmarkSearchNumberInPgArray(b, 1000)
+}
+
+func benchmarkSearchNumberInPgArray(b *testing.B, number int) {
+	// run the BenchmarkSearchNumberInPgArray function b.N times
+	for n := 0; n < b.N; n++ {
+		SearchNumberInPgArray(number, arr)
+	}
+}
