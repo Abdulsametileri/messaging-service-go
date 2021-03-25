@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"context"
 	"github.com/Abdulsametileri/messaging-service/config"
 	"github.com/Abdulsametileri/messaging-service/controllers"
 	"github.com/Abdulsametileri/messaging-service/database"
@@ -16,6 +16,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"time"
 )
 
 func main() {
@@ -72,9 +75,29 @@ func main() {
 		v1.POST("sendMessage/:userName", middlewares.RequireLoggedIn(baseCtl), messageCtl.SendMessage)
 	}
 
-	fmt.Println("Server Started")
-	err := router.Run(":8080")
-	if err != nil {
-		log.Fatal(err.Error())
+	srv := &http.Server{
+		Addr:         ":8080",
+		Handler:      router,
+		ReadTimeout:  5 * time.Second,   // max time to read request from the client
+		WriteTimeout: 10 * time.Second,  // max time to write response to the client
+		IdleTimeout:  120 * time.Second, // max time for connections using TCP Keep-Alive
 	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			log.Fatal(err.Error())
+		}
+	}()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Kill)
+
+	// Block until a signal is received.
+	sig := <-c
+	log.Println("Got signal:", sig)
+	// gracefully shutdown the server, waiting max 30 seconds for current operations to complete
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+
+	srv.Shutdown(ctx)
 }
