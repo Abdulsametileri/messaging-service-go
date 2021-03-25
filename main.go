@@ -6,6 +6,7 @@ import (
 	"github.com/Abdulsametileri/messaging-service/config"
 	"github.com/Abdulsametileri/messaging-service/controllers"
 	"github.com/Abdulsametileri/messaging-service/database"
+	"github.com/Abdulsametileri/messaging-service/infra/mailgunclient"
 	"github.com/Abdulsametileri/messaging-service/middlewares"
 	"github.com/Abdulsametileri/messaging-service/repository/logrepo"
 	"github.com/Abdulsametileri/messaging-service/repository/messagerepo"
@@ -30,6 +31,12 @@ func main() {
 
 	redisCache := cache.NewRedisCache()
 	_ = redisCache
+
+	/*
+		====== Setup infra ==============
+	*/
+	emailClient := mailgunclient.NewMailgunClient()
+	_ = emailClient
 
 	/*
 		====== Setup repositories =======
