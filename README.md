@@ -1,13 +1,12 @@
 ## TO DO LIST
 
-- [x] Kullanıcılar sistemde hesap oluşturabilir ve login olabilir.
-- [x] Kullanıcılar birbirlerinin kullanıcı adını bildiği sürece mesajlaşabilirler.
-- [x] Kullanıcılar geçmişe dönük mesajlaşmalarına erişebilirler.
-- [x] Bir kullanıcı mesaj almak istemediği diğer kullanıcıyı bloklayabilir.
-- [x] Kullanıcıların aktivite (login, invalid login, vb.) logları tutulmalıdır.
-- [x] Tüm hatalar kayıt altına alınmalı ve kritik detaylar kullanıcılara iletilmemelidir.
+- [x] Users can create account and login
+- [x] The only way the user can message have to know the receiver user name.
+- [x] Users can access their chat history.
+- [x] Users can block each other
+- [x] All errors must be stored and dont send critical error messages on client side
 - [x] Dockerize and scalability
-- [x] Unit Test Coverage
+- [x] Unit Test Coverage 
 
 # API Endpoints
 
@@ -15,38 +14,45 @@
 
 `POST api/v1/login` <br/>
 
-### JWT Middleware 
-İstek yapabilmek için token gerekli. <br/>
-Authorization: Bearer eydsad.....
+### JWT Middleware
 
-`GET api/v1/mutateUser/:mutateUserId` <br/>
+In order to request as you predict, you have to put token.
+ 
+`Authorization: Bearer eydsad.....`
+
+`GET api/v1/mutateUser/:mutateUserId` 
   
-`GET api/v1/users` <br/>   
+`GET api/v1/users`
+   
+`GET api/v1/messagesWith/:userName` 
 
-`GET api/v1/messagesWith/:userName` <br/>
+`POST api/v1/sendMessage/:userName`
 
-`POST api/v1/sendMessage/:userName` <br/>
+Build and up with docker-compose
 
-Compose ile ayağa kaldırmak için
 ```
 $ docker-compose up --build
 ```
 
-Docker kullanmadan development modunda ayağa kaldırmak için 
-tags'ı vermek gerekir. 
+Build development mode
 ```
 $ go run --tags dev main.go
 ```
 
-Örnek İstekler <br/>
-http://localhost/api/v1/register <br/>
-http://localhost/api/v1/sendMessage/abdulsamet <br/>
-http://localhost/api/v1/mutateUser/3 <br/>
+Example Request URL's
 
-NOT: nginx ile 80. porttan serve edildiği için portu url'e yazmıyoruz.
-Round robin algoritmasına göre oluşan yükü 3 containere dağıtıyor.
- 
-``` 
+**You must add :8080 if you are development mode.** 
+
+http://localhost/api/v1/register 
+
+http://localhost/api/v1/sendMessage/abdulsamet
+
+http://localhost/api/v1/mutateUser/3 
+
+
+As default application runs 3 instance. You can easly edit `docker-compose.yml` 
+
+``` dockerfile
 api:
     ....
     deploy:
@@ -54,17 +60,10 @@ api:
     ...
 ```
 
-Docker compose dosyasındaki deploy replicas kısmından scale edilebilir. 
-Eğer docker compose kullanılmadan ayağa kaldırılacaksa 8080 portunu istek yaparken 
-belirtmek gerekir.
 
-http://localhost:8080/api/v1/register <br/>
-http://localhost:8080/api/v1/sendMessage/abdulsamet <br/>
-http://localhost:8080/api/v1/mutateUser/3 <br/>
+### To see unit tests and their coverage, run
 
-### Godaki unit testleri kaldırmak ve coverage i görmek için
-
-```
+```shell script
 $ go test --tags dev --cover ./...
 ```
 
